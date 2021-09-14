@@ -10,8 +10,18 @@
 </head>
 <body>
     <!-- 렌더링 영역 -->
+    <!-- <___></___>: 컴포넌트 명시 -->
     <div id="app">
         <cart-header></cart-header>
+        <div v-show="showAll">
+            <h2>전체 목록</h2>
+            <ul>
+                <li v-for="item in items">{{ item.name }}</li>
+            </ul>
+        </div>
+        <!-- data "items"를 propsdata "shopping-items"로 전달 -->
+        <shop-list v-bind:shopping-items="items"></shop-list>
+        <cart-input></cart-input>
         <cart-footer></cart-footer>
     </div>
     <script>
@@ -29,9 +39,69 @@
             template: '<p>&copy; Bit Academy</p>'
         })
 
+        // 살 물건 목록
+        var shopList = {
+            // props 받아오기
+            props: ['shopping-items'],
+            template:
+                `<div>
+                    <h2>살 물건들</h2>
+                    <ul>
+                        <li v-for="(item, index) in shoppingItems"
+                        v-if="!item.buy">{{item.name}}
+                        <button @click="buyItem(item, index)">구매</button>
+                        </li>
+                    </ul>    
+                </div>`,
+                // -> button을 click했을 때 buyItem 함수 호출, 인자값과 인덱스가 넘어감
+                methods: {
+                    buyItem: function(item, index) {
+                        console.log("구매할 아이템:", item);
+                        item.buy = true;
+                    } //-> 무, 배추 구매 button click하면 true로 바뀜
+                }
+        }
+
+        // cart input 컴포넌트
+        var cartInput = {
+            template: `
+                <div>
+                    <input v-model="newItem">
+                    <button v-on:click="addItem">추가</button>
+                <div>`,
+                // -> click하면 addItem 함수 호출, console 출력
+                data: function() {
+                return {
+                    newItem: ""
+                }
+            },
+            methods: {
+                addItem: function() {
+                    console.log("추가할 아이템:", this.newItem);
+                }
+            }
+        }
+        // -> 입력상자 Input 데이터 연동. newItem은 비어있는 문자열
+        // 입력 값이 변경되면 newItem도 변경 시키기 위해서 V-model 연결
+
         // Vue 인스턴스
         var app = new Vue({
-            el: "#app"
+            el: "#app",
+            data: {
+                items: [
+                    { name: "무", buy: false },
+                    { name: "배추", buy: false },
+                    { name: "쪽파", buy: true },
+                    { name: "고춧가루", buy: true }
+                ],
+                showAll: false
+            },
+            components: {
+                // shopList 컴포넌트를 지역(local) 컴포넌트로 등록
+                "shop-list": shopList,
+                // cartInput 컴포넌트도 새로 만들었으니 지역(local) 컴포넌트로 등록
+                "cart-input": cartInput
+            }
         });
         // -> Vue 인스턴스가 el 속성에 의해서 렌더링 영역으로 mount
 
