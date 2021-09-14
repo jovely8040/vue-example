@@ -23,6 +23,11 @@
         <shop-list v-bind:shopping-items="items"></shop-list>
         <!-- 이벤트가 발생했을 때 addItem 함수를 실행 시켜라 -->
         <cart-input v-on:add-item="addItem"></cart-input>
+        <input type="checkbox" v-model="showOption">산 물건 보기
+        <bought-list 
+            v-bind:bought-items="items"
+            v-show="showOption"
+            v-on:remove-item="removeItem"></bought-list>
         <cart-footer></cart-footer>
     </div>
     <script>
@@ -63,6 +68,34 @@
                 }
         }
 
+        // 산 물건 목록
+        var boughtList = {
+            props: ["bought-items"],
+            template: `
+                <div>
+                    <h2>산 물건들</h2>
+                    <ul>
+                        <li v-for="(item, index) in boughtItems"
+                            v-if="item.buy">{{ item.name }}
+                            <button v-on:click="removeItem(item)">삭제</button>
+                            <button v-on:click="cancelBuy(item)">구매 취소</button>
+                        </li>
+                    </ul>
+                </div>`,
+                // -> 삭제 button을 누르면 removeItem에 item 전달 및 함수 호출
+                // -> 구매 취소 button을 누르면 cancleBuy에 item 전달 및 함수 호출, false로 변경됨
+                methods: {
+                    cancelBuy: function(item) {
+                        item.buy = false;
+                    },
+                    removeItem: function(item) {
+                        // 부모로 삭제할 아이템을 전송
+                        console.log("삭제할 아이템:", item);
+                        this.$emit("remove-item", item);
+                    }
+            }
+        }
+
         // cart input 컴포넌트
         var cartInput = {
             template: `
@@ -101,13 +134,16 @@
                     { name: "쪽파", buy: true },
                     { name: "고춧가루", buy: true }
                 ],
-                showAll: false
+                showAll: false,
+                showOption: true
             },
             components: {
                 // shopList 컴포넌트를 지역(local) 컴포넌트로 등록
                 "shop-list": shopList,
                 // cartInput 컴포넌트도 새로 만들었으니 지역(local) 컴포넌트로 등록
-                "cart-input": cartInput
+                "cart-input": cartInput,
+                // 마찬가지로 bought-list 컴포넌트를 지역(local) 컴포넌트로 등록
+                "bought-list":boughtList
             },
             methods: {
                 addItem: function(item) {
@@ -117,6 +153,14 @@
                         name: item,
                         buy: false
                     })
+                },
+                removeItem: function(item) {
+                    // 삭제할 아이템의 인덱스 확인
+                    var index = this.items.indexOf(item);
+                    if (index > -1) { // 인덱스 찾으면
+                        // 배열에서 요소를 삭제
+                        this.items.splice(index, 1);
+                    }
                 }
             }
         });
