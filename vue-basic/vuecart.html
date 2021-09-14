@@ -21,7 +21,8 @@
         </div>
         <!-- data "items"를 propsdata "shopping-items"로 전달 -->
         <shop-list v-bind:shopping-items="items"></shop-list>
-        <cart-input></cart-input>
+        <!-- 이벤트가 발생했을 때 addItem 함수를 실행 시켜라 -->
+        <cart-input v-on:add-item="addItem"></cart-input>
         <cart-footer></cart-footer>
     </div>
     <script>
@@ -68,7 +69,7 @@
                 <div>
                     <input v-model="newItem">
                     <button v-on:click="addItem">추가</button>
-                <div>`,
+                </div>`,
                 // -> click하면 addItem 함수 호출, console 출력
                 data: function() {
                 return {
@@ -78,6 +79,12 @@
             methods: {
                 addItem: function() {
                     console.log("추가할 아이템:", this.newItem);
+                    // newItem을 부모로 전송하기 위해 event발생 시키자
+                    if (this.newItem.trim().length > 0) {
+                        // 구매 아이템을 부모로 전송
+                        this.$emit("add-item", this.newItem.trim());
+                        this.newItem = "";
+                    }
                 }
             }
         }
@@ -101,6 +108,16 @@
                 "shop-list": shopList,
                 // cartInput 컴포넌트도 새로 만들었으니 지역(local) 컴포넌트로 등록
                 "cart-input": cartInput
+            },
+            methods: {
+                addItem: function(item) {
+                    console.log("추가할 아이템:", item);
+                    // items 배열에 아이템 추가
+                    this.items.push({
+                        name: item,
+                        buy: false
+                    })
+                }
             }
         });
         // -> Vue 인스턴스가 el 속성에 의해서 렌더링 영역으로 mount
