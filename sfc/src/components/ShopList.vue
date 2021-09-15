@@ -4,7 +4,9 @@
         <ul>
             <!-- li v-for="(item, index) in shoppingItems"
                 v-if="!item.buy" -->
-            <li v-for="(item, index) in filteredItems" v-bind:key="index">
+
+            <li v-for="(item, index) in filteredItems"
+                v-bind:key="index">
                 {{item.name}}
                 <button @click="buyItem(item, index)">구매</button>
             </li>
