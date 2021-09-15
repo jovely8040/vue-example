@@ -33,10 +33,17 @@
     <script>
         // 전역 컴포넌트: 모든 인스터스에서 사용 가능
         Vue.component("cart-header", {
-            template: '<h1>{{ title }}</h1>',
+            // template: '<h1>{{ title.toUpperCase() }}</h1>',
+            template: '<h1>{{ upperTitle }}</h1>',
             data: function() {
                 return {
                     title: 'Vue Cart'
+                }
+            },
+            computed: {
+                // 미리 계산 수행, 결과를 캐싱
+                upperTitle: function() {
+                    return this.title.toUpperCase();
                 }
             }
         })
@@ -53,8 +60,11 @@
                 `<div>
                     <h2>살 물건들</h2>
                     <ul>
-                        <li v-for="(item, index) in shoppingItems"
-                        v-if="!item.buy">{{item.name}}
+                        <!-- li v-for="(item, index) in shoppingItems"
+                        v-if="!item.buy" -->
+                        
+                        <li v-for="(item, index) in filteredItems">
+                            {{item.name}}
                         <button @click="buyItem(item, index)">구매</button>
                         </li>
                     </ul>    
@@ -65,6 +75,15 @@
                         console.log("구매할 아이템:", item);
                         item.buy = true;
                     } //-> 무, 배추 구매 button click하면 true로 바뀜
+                },
+                computed: {
+                    filteredItems: function() {
+                        // 전달 받을 shoppingItems로 부터
+                        // item.buy == false인 것만 필터링
+                        return this.shoppingItems.filter(item => {
+                            return !item.buy; // item.buy === false
+                        })
+                    }
                 }
         }
 
@@ -75,8 +94,11 @@
                 <div>
                     <h2>산 물건들</h2>
                     <ul>
-                        <li v-for="(item, index) in boughtItems"
-                            v-if="item.buy">{{ item.name }}
+                        <!-- li v-for="(item, index) in boughtItems"
+                        v-if="item.buy" -->
+                            
+                        <li v-for="(item,index) in filteredItems">
+                            {{ item.name }}
                             <button v-on:click="removeItem(item)">삭제</button>
                             <button v-on:click="cancelBuy(item)">구매 취소</button>
                         </li>
@@ -93,6 +115,14 @@
                         console.log("삭제할 아이템:", item);
                         this.$emit("remove-item", item);
                     }
+            },
+            computed: {
+                filteredItems: function() {
+                    // 미리 연산을 수행, 결과 캐싱
+                    return this.boughtItems.filter(item => {
+                        return item.buy;
+                    })
+                }
             }
         }
 
@@ -100,13 +130,25 @@
         var cartInput = {
             template: `
                 <div>
+                    <p>{{ message }}</p>
                     <input v-model="newItem">
                     <button v-on:click="addItem">추가</button>
                 </div>`,
                 // -> click하면 addItem 함수 호출, console 출력
                 data: function() {
                 return {
-                    newItem: ""
+                    newItem: "", // 감시
+                    message: "상품을 입력하세요."
+                }
+            },
+            watch: {
+                newItem: function(item) {
+                    console.log("watch:", item);
+                    if (this.newItem.trim().length > 0) {
+                        this.message = "상품을 등록하실 수 있습니다."
+                    } else {
+                        this.message = "상품을 입력하세요."
+                    }
                 }
             },
             methods: {
